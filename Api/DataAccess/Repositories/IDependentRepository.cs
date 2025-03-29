@@ -1,11 +1,11 @@
 ﻿using Api.Models;
 
-namespace Api.Repositories
+namespace Api.DataAccess.Repositories
 {
     public interface IDependentRepository
     {
         Task<Dependent> GetDependentById(int id);
 
-        Task<IEnumerable<Dependent>> GetAllDependentsAsync();
+        Task<IEnumerable<Dependent>> GetAllDependents();
     }
 }

@@ -6,6 +6,7 @@ namespace Api.Services
     {
         Task<GetEmployeeDto> GetEmployeeById(int id);
 
-        Task<IEnumerable<GetEmployeeDto>> GetAllEmployeesAsync();
+        Task<IEnumerable<GetEmployeeDto>> GetAllEmployees();
+        Task<decimal> CalculatePaycheck(int id);
     }
 }

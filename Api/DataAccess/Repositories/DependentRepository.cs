@@ -1,8 +1,9 @@
-﻿using Api.DbContext;
+﻿using Api.DataAccess.Db;
+using Api.Exceptions;
 using Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Repositories
+namespace Api.DataAccess.Repositories
 {
     public class DependentRepository : IDependentRepository
     {
@@ -15,11 +16,18 @@ namespace Api.Repositories
 
         public async Task<Dependent> GetDependentById(int id)
         {
-            return await _context.Dependents.FindAsync(id);
+            var depenedent = await _context.Dependents.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (depenedent == null)
+            {
+                throw new EntityNotFoundException($"Dependent with id '{id}' was not found.");
+            }
+
+            return depenedent;
         }
 
         // TODO: add pagination
-        public async Task<IEnumerable<Dependent>> GetAllDependentsAsync()
+        public async Task<IEnumerable<Dependent>> GetAllDependents()
         {
             return await _context.Dependents.ToListAsync();
         }

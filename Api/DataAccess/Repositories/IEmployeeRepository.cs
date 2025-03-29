@@ -1,11 +1,11 @@
 ﻿using Api.Models;
 
-namespace Api.Repositories
+namespace Api.DataAccess.Repositories
 {
     public interface IEmployeeRepository
     {
         Task<Employee> GetEmployeeById(int id);
 
-        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
+        Task<IEnumerable<Employee>> GetAllEmployees();
     }
 }

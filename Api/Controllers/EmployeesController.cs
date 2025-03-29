@@ -36,11 +36,26 @@ public class EmployeesController : ControllerBase
     [HttpGet("")]
     public async Task<ActionResult<ApiResponse<IEnumerable<GetEmployeeDto>>>> GetAll()
     {
-        var dependents = await _employeeService.GetAllEmployeesAsync();
+        var dependents = await _employeeService.GetAllEmployees();
 
         var result = new ApiResponse<IEnumerable<GetEmployeeDto>>
         {
             Data = dependents,
+            Success = true
+        };
+
+        return result;
+    }
+
+    [SwaggerOperation(Summary = "Get employee's paycheck")]
+    [HttpGet("{id}/paycheck")]
+    public async Task<ActionResult<ApiResponse<decimal>>> GetPaycheck(int id)
+    {
+        var paycheck = await _employeeService.CalculatePaycheck(id);
+
+        var result = new ApiResponse<decimal>
+        {
+            Data = paycheck,
             Success = true
         };
 

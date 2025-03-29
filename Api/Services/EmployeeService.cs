@@ -1,5 +1,5 @@
-﻿using Api.Dtos.Employee;
-using Api.Repositories;
+﻿using Api.DataAccess.Repositories;
+using Api.Dtos.Employee;
 using AutoMapper;
 
 namespace Api.Services
@@ -7,11 +7,13 @@ namespace Api.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IPaycheckCalculator _paycheckCalculator;
         private readonly IMapper _mapper;
 
-        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper)
+        public EmployeeService(IEmployeeRepository employeeRepository, IPaycheckCalculator paycheckCalculator, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
+            _paycheckCalculator = paycheckCalculator;
             _mapper = mapper;
         }
 
@@ -22,11 +24,18 @@ namespace Api.Services
             return _mapper.Map<GetEmployeeDto>(employee);
         }
 
-        public async Task<IEnumerable<GetEmployeeDto>> GetAllEmployeesAsync()
+        public async Task<IEnumerable<GetEmployeeDto>> GetAllEmployees()
         {
-            var employees = await _employeeRepository.GetAllEmployeesAsync();
+            var employees = await _employeeRepository.GetAllEmployees();
 
             return _mapper.Map<IEnumerable<GetEmployeeDto>>(employees);
+        }
+
+        public async Task<decimal> CalculatePaycheck(int id)
+        {
+            var employee = await _employeeRepository.GetEmployeeById(id);
+
+            return _paycheckCalculator.CalculatePaycheck(employee);
         }
     }
 }

@@ -36,7 +36,7 @@ public class DependentsController : ControllerBase
     [HttpGet("")]
     public async Task<ActionResult<ApiResponse<IEnumerable<GetDependentDto>>>> GetAll()
     {
-        var dependents = await _dependentService.GetAllDependentsAsync();
+        var dependents = await _dependentService.GetAllDependents();
 
         var result = new ApiResponse<IEnumerable<GetDependentDto>>
         {

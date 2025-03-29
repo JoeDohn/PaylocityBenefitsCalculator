@@ -6,6 +6,6 @@ namespace Api.Services
     {
         Task<GetDependentDto> GetDependentById(int id);
 
-        Task<IEnumerable<GetDependentDto>> GetAllDependentsAsync();
+        Task<IEnumerable<GetDependentDto>> GetAllDependents();
     }
 }

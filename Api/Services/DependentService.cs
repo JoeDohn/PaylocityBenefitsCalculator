@@ -1,5 +1,5 @@
-﻿using Api.Dtos.Dependent;
-using Api.Repositories;
+﻿using Api.DataAccess.Repositories;
+using Api.Dtos.Dependent;
 using AutoMapper;
 
 namespace Api.Services
@@ -22,9 +22,9 @@ namespace Api.Services
             return _mapper.Map<GetDependentDto>(dependent);
         }
 
-        public async Task<IEnumerable<GetDependentDto>> GetAllDependentsAsync()
+        public async Task<IEnumerable<GetDependentDto>> GetAllDependents()
         {
-            var dependents = await _dependentRepository.GetAllDependentsAsync();
+            var dependents = await _dependentRepository.GetAllDependents();
 
             return _mapper.Map<IEnumerable<GetDependentDto>>(dependents);
         }

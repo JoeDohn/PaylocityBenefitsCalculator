@@ -1,13 +1,11 @@
-﻿using Api.DbContext;
-using Api.Models;
+﻿using Api.Models;
 
-namespace Api.Db
+namespace Api.DataAccess.Db
 {
     public static class DbInitializer
     {
         public static void Initialize(AppDbContext context)
         {
-            // Look for any students.
             if (context.Employees.Any())
             {
                 return;   // DB has been seeded

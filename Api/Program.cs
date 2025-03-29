@@ -1,7 +1,7 @@
-using Api.Db;
-using Api.DbContext;
+using Api.DataAccess.Db;
+using Api.DataAccess.Repositories;
 using Api.Mappers;
-using Api.Repositories;
+using Api.Options;
 using Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -61,11 +61,14 @@ app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
+    builder.Services.Configure<PayrollSettings>(builder.Configuration.GetSection("PayrollSettings"));
+
     builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
     builder.Services.AddScoped<IDependentRepository, DependentRepository>();
 
     builder.Services.AddScoped<IEmployeeService, EmployeeService>();
     builder.Services.AddScoped<IDependentService, DependentService>();
+    builder.Services.AddScoped<IPaycheckCalculator, PaycheckCalculator>();
 
     builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
 }
