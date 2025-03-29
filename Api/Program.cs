@@ -1,8 +1,21 @@
+using Api.Db;
+using Api.DbContext;
+using Api.Mappers;
+using Api.Repositories;
+using Api.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Register DbContext (use In-Memory database for simplicity)
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("EmployeePaycheckDb"));
+
+// Register dependencies
+AddServices(builder); 
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -32,6 +45,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    AddTestDataToDb(app);
 }
 
 app.UseCors(allowLocalhost);
@@ -43,3 +58,26 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void AddServices(WebApplicationBuilder builder)
+{
+    builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+    builder.Services.AddScoped<IDependentRepository, DependentRepository>();
+
+    builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+    builder.Services.AddScoped<IDependentService, DependentService>();
+
+    builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
+}
+
+static void AddTestDataToDb(WebApplication app)
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+
+        var context = services.GetRequiredService<AppDbContext>();
+        context.Database.EnsureCreated();
+        DbInitializer.Initialize(context);
+    }
+}
