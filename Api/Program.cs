@@ -1,6 +1,7 @@
 using Api.DataAccess.Db;
 using Api.DataAccess.Repositories;
 using Api.Mappers;
+using Api.Middleware;
 using Api.Options;
 using Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Register Middlewares
+AddMiddlewares(app);
+
 app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
@@ -71,6 +75,11 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IPaycheckCalculator, PaycheckCalculator>();
 
     builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
+}
+
+static void AddMiddlewares(WebApplication app)
+{
+    app.UseMiddleware<ErrorHandlingMiddleware>();
 }
 
 static void AddTestDataToDb(WebApplication app)
