@@ -1,6 +1,6 @@
 ﻿namespace Api.Options
 {
-    public class PayrollSettings
+    public class PaycheckSettings
     {
         public decimal BaseEmployeeCost { get; set; }
 

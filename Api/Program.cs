@@ -58,14 +58,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Register Middlewares
+// Use Middlewares
 AddMiddlewares(app);
 
 app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
-    builder.Services.Configure<PayrollSettings>(builder.Configuration.GetSection("PayrollSettings"));
+    builder.Services.Configure<PaycheckSettings>(builder.Configuration.GetSection(nameof(PaycheckSettings)));
 
     builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
     builder.Services.AddScoped<IDependentRepository, DependentRepository>();
@@ -73,6 +73,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IEmployeeService, EmployeeService>();
     builder.Services.AddScoped<IDependentService, DependentService>();
     builder.Services.AddScoped<IPaycheckCalculator, PaycheckCalculator>();
+    builder.Services.AddScoped<IYearIntervalProvider, YearIntervalProvider>();
 
     builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
 }
