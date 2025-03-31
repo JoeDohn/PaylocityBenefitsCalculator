@@ -1,18 +1,20 @@
-﻿namespace Api.Services
+﻿using Api.Models;
+
+namespace Api.Services
 {
     // Need this class to calculate dates of current period. Will use it for applying senior discount
     public class YearIntervalProvider : IYearIntervalProvider
     {
-        public (DateTime StartDate, DateTime EndDate) GetCurrentInterval(DateTime currentDate, int numberOfIntervals)
+        public DateInterval GetCurrentInterval(DateTime currentDate, int numberOfIntervals)
         {
             var yearIntervals = GetYearIntervals(currentDate.Year, numberOfIntervals);
 
-            return yearIntervals.FirstOrDefault(x => x.StartDate <= currentDate.Date && x.EndDate >= currentDate.Date);
+            return yearIntervals.Single(x => x.StartDate <= currentDate.Date && x.EndDate >= currentDate.Date);
         }
 
-        private static IEnumerable<(DateTime StartDate, DateTime EndDate)> GetYearIntervals(int year, int numberOfIntervals)
+        private static IEnumerable<DateInterval> GetYearIntervals(int year, int numberOfIntervals)
         {
-            var intervals = new List<(DateTime, DateTime)>();
+            var intervals = new List<DateInterval>();
 
             var totalDays = DateTime.IsLeapYear(year) ? 366 : 365;
 
@@ -38,7 +40,7 @@
                 }
 
                 var endDate = startDate.AddDays(daysInInterval - 1);
-                intervals.Add((startDate, endDate));
+                intervals.Add(new DateInterval { StartDate = startDate, EndDate = endDate });
 
                 startDate = endDate.AddDays(1); // The next interval starts the next day
             }

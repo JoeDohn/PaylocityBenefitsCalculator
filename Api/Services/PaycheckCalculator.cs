@@ -1,4 +1,5 @@
-﻿using Api.Models;
+﻿using Api.Dtos.Employee;
+using Api.Models;
 using Api.Options;
 using Microsoft.Extensions.Options;
 
@@ -15,37 +16,43 @@ namespace Api.Services
             _settings = settings.Value;
         }
 
-        public decimal CalculatePaycheck(Employee employee)
+        public GetPaycheckDto CalculatePaycheck(Employee employee)
         {
             var currentDateTime = DateTime.UtcNow;
-            var annualGrossSalary = employee.Salary;
 
-            var annualBaseCost = _settings.BaseEmployeeCost * 12;
-            var annualDependentCost = employee.Dependents.Sum(x => CalcaulateDependentCost(x, currentDateTime)) * 12;
-            var annualHighEarnerCost = annualGrossSalary > _settings.HighEarnerThreshold
-                ? (annualGrossSalary * _settings.HighEarnerPercentage / 100)
+            var currentPaycheckPeriod = _yearIntervalProvider.GetCurrentInterval(currentDateTime, _settings.PaychecksPerYear);
+
+            // Since we pay in USD we can have only 2 decimals (cents)
+            var perPaycheckGrossSalary = Math.Round(employee.Salary / _settings.PaychecksPerYear, 2);
+            var perPaycheckBaseCost = _settings.BaseEmployeeCost * 12 / _settings.PaychecksPerYear;
+            var perPaycheckDependentCost = employee.Dependents.Sum(x => CalculatePerPaycheckDependentCost(x, currentDateTime, currentPaycheckPeriod.StartDate));
+            var perPaycheckHighEarnerCost = employee.Salary > _settings.HighEarnerThreshold
+                ? (perPaycheckGrossSalary * _settings.HighEarnerPercentage / 100)
                 : 0;
 
-            var totalAnnualDeductions = annualBaseCost + annualDependentCost + annualHighEarnerCost;
-            var annualNetSalary = annualGrossSalary - totalAnnualDeductions;
-            // Since we pay in USD we can have only 2 decimals (cents)
-            var perPaycheckNetSalary = Math.Round(annualNetSalary / _settings.PaychecksPerYear, 2);
+            var perPaycheckDeductions = Math.Round(perPaycheckBaseCost + perPaycheckDependentCost + perPaycheckHighEarnerCost, 2);
+            var perPaycheckNetSalary = perPaycheckGrossSalary - perPaycheckDeductions;
 
-            return perPaycheckNetSalary;
+            return new GetPaycheckDto
+            {
+                EmployeeId = employee.Id,
+                Benefits = perPaycheckDeductions,
+                GrossSalary = perPaycheckGrossSalary,
+                NetSalary = perPaycheckNetSalary,
+                PaycheckPeriod = currentPaycheckPeriod
+            };
         }
 
-        private decimal CalcaulateDependentCost(Dependent dependent, DateTime currentDateTime)
+        private decimal CalculatePerPaycheckDependentCost(Dependent dependent, DateTime currentDateTime, DateTime currentPaycheckPeriodStartDate)
         {
-            var currentInterval = _yearIntervalProvider.GetCurrentInterval(currentDateTime, _settings.PaychecksPerYear);
-
             // I decided to calculate this discount for the whole period.
-            // It means, if dependent age is less then 50 years on the moment of start date of current period, we will not give any discount.
+            // It means, if dependent age is less then 50 years on the moment of start date of current period, we will not give senior discount.
             // Some of the requirements are not clear, so I don't want to implement complex solution before clarification.
-            var isSenior = dependent.DateOfBirth.AddYears(_settings.SeniorDependentAgeThreshold) <= currentInterval.StartDate;
+            var isSenior = dependent.DateOfBirth.AddYears(_settings.SeniorDependentAgeThreshold) <= currentPaycheckPeriodStartDate;
 
-            return isSenior
-                ? _settings.SeniorDependentCost
-                : _settings.DependentCost;
+            var monthlyDependentCost = isSenior ? _settings.SeniorDependentCost : _settings.DependentCost;
+
+            return monthlyDependentCost * 12 / _settings.PaychecksPerYear;
         }
     }
 }

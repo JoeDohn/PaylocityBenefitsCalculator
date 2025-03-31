@@ -49,11 +49,11 @@ public class EmployeesController : ControllerBase
 
     [SwaggerOperation(Summary = "Get employee's paycheck")]
     [HttpGet("{id}/paycheck")]
-    public async Task<ActionResult<ApiResponse<decimal>>> GetPaycheck(int id)
+    public async Task<ActionResult<ApiResponse<GetPaycheckDto>>> GetPaycheck(int id)
     {
         var paycheck = await _employeeService.CalculatePaycheck(id);
 
-        var result = new ApiResponse<decimal>
+        var result = new ApiResponse<GetPaycheckDto>
         {
             Data = paycheck,
             Success = true

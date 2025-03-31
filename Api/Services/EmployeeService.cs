@@ -31,7 +31,7 @@ namespace Api.Services
             return _mapper.Map<IEnumerable<GetEmployeeDto>>(employees);
         }
 
-        public async Task<decimal> CalculatePaycheck(int id)
+        public async Task<GetPaycheckDto> CalculatePaycheck(int id)
         {
             var employee = await _employeeRepository.GetEmployeeById(id);
 

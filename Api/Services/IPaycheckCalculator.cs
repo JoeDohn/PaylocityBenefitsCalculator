@@ -1,9 +1,10 @@
-﻿using Api.Models;
+﻿using Api.Dtos.Employee;
+using Api.Models;
 
 namespace Api.Services
 {
     public interface IPaycheckCalculator
     {
-        decimal CalculatePaycheck(Employee employee);
+        GetPaycheckDto CalculatePaycheck(Employee employee);
     }
 }
