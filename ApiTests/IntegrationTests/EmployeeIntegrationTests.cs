@@ -9,12 +9,20 @@ using Xunit;
 
 namespace ApiTests.IntegrationTests;
 
-public class EmployeeIntegrationTests : IntegrationTest
+[Collection("IntegrationTest collection")]
+public class EmployeeIntegrationTests : IClassFixture<IntegrationTest>
 {
+    private IntegrationTest _fixture;
+
+    public EmployeeIntegrationTests(IntegrationTest fixture)
+    {
+        _fixture = fixture;
+    }
+
     [Fact]
     public async Task WhenAskedForAllEmployees_ShouldReturnAllEmployees()
     {
-        var response = await HttpClient.GetAsync("/api/v1/employees");
+        var response = await _fixture.HttpClient.GetAsync("/api/v1/employees");
         var employees = new List<GetEmployeeDto>
         {
             new()
@@ -87,7 +95,7 @@ public class EmployeeIntegrationTests : IntegrationTest
     //task: make test pass
     public async Task WhenAskedForAnEmployee_ShouldReturnCorrectEmployee()
     {
-        var response = await HttpClient.GetAsync("/api/v1/employees/1");
+        var response = await _fixture.HttpClient.GetAsync("/api/v1/employees/1");
         var employee = new GetEmployeeDto
         {
             Id = 1,
@@ -103,7 +111,7 @@ public class EmployeeIntegrationTests : IntegrationTest
     //task: make test pass
     public async Task WhenAskedForANonexistentEmployee_ShouldReturn404()
     {
-        var response = await HttpClient.GetAsync($"/api/v1/employees/{int.MinValue}");
+        var response = await _fixture.HttpClient.GetAsync($"/api/v1/employees/{int.MinValue}");
         await response.ShouldReturn(HttpStatusCode.NotFound);
     }
 }

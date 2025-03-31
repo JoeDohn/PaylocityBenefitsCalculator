@@ -8,13 +8,21 @@ using Xunit;
 
 namespace ApiTests.IntegrationTests;
 
-public class DependentIntegrationTests : IntegrationTest
+[Collection("IntegrationTest collection")]
+public class DependentIntegrationTests : IClassFixture<IntegrationTest>
 {
+    private IntegrationTest _fixture;
+
+    public DependentIntegrationTests(IntegrationTest fixture)
+    {
+        _fixture = fixture;
+    }
+
     [Fact]
     //task: make test pass
     public async Task WhenAskedForAllDependents_ShouldReturnAllDependents()
     {
-        var response = await HttpClient.GetAsync("/api/v1/dependents");
+        var response = await _fixture.HttpClient.GetAsync("/api/v1/dependents");
         var dependents = new List<GetDependentDto>
         {
             new()
@@ -57,7 +65,7 @@ public class DependentIntegrationTests : IntegrationTest
     //task: make test pass
     public async Task WhenAskedForADependent_ShouldReturnCorrectDependent()
     {
-        var response = await HttpClient.GetAsync("/api/v1/dependents/1");
+        var response = await _fixture.HttpClient.GetAsync("/api/v1/dependents/1");
         var dependent = new GetDependentDto
         {
             Id = 1,
@@ -73,7 +81,7 @@ public class DependentIntegrationTests : IntegrationTest
     //task: make test pass
     public async Task WhenAskedForANonexistentDependent_ShouldReturn404()
     {
-        var response = await HttpClient.GetAsync($"/api/v1/dependents/{int.MinValue}");
+        var response = await _fixture.HttpClient.GetAsync($"/api/v1/dependents/{int.MinValue}");
         await response.ShouldReturn(HttpStatusCode.NotFound);
     }
 }

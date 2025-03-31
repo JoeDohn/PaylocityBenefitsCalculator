@@ -7,90 +7,96 @@ using Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-// Register DbContext (use In-Memory database for simplicity)
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("EmployeePaycheckDb"));
-
-// Register dependencies
-AddServices(builder); 
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+public class Program
 {
-    c.EnableAnnotations();
-    c.SwaggerDoc("v1", new OpenApiInfo
+    public static void Main(string[] args)
     {
-        Version = "v1",
-        Title = "Employee Benefit Cost Calculation Api",
-        Description = "Api to support employee benefit cost calculations"
-    });
-});
+        var builder = WebApplication.CreateBuilder(args);
 
-var allowLocalhost = "allow localhost";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(allowLocalhost,
-        policy => { policy.WithOrigins("http://localhost:3000", "http://localhost"); });
-});
+        // Add services to the container.
 
-var app = builder.Build();
+        // Register DbContext (use In-Memory database for simplicity)
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseInMemoryDatabase("EmployeePaycheckDb"));
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+        // Register dependencies
+        AddServices(builder);
 
-    AddTestDataToDb(app);
-}
+        builder.Services.AddControllers();
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.EnableAnnotations();
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "Employee Benefit Cost Calculation Api",
+                Description = "Api to support employee benefit cost calculations"
+            });
+        });
 
-app.UseCors(allowLocalhost);
+        var allowLocalhost = "allow localhost";
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(allowLocalhost,
+                policy => { policy.WithOrigins("http://localhost:3000", "http://localhost"); });
+        });
 
-app.UseHttpsRedirection();
+        var app = builder.Build();
 
-app.UseAuthorization();
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
-app.MapControllers();
+            AddTestDataToDb(app);
+        }
 
-// Use Middlewares
-AddMiddlewares(app);
+        app.UseCors(allowLocalhost);
 
-app.Run();
+        app.UseHttpsRedirection();
 
-static void AddServices(WebApplicationBuilder builder)
-{
-    builder.Services.Configure<PaycheckSettings>(builder.Configuration.GetSection(nameof(PaycheckSettings)));
+        app.UseAuthorization();
 
-    builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-    builder.Services.AddScoped<IDependentRepository, DependentRepository>();
+        app.MapControllers();
 
-    builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-    builder.Services.AddScoped<IDependentService, DependentService>();
-    builder.Services.AddScoped<IPaycheckCalculator, PaycheckCalculator>();
-    builder.Services.AddScoped<IYearIntervalProvider, YearIntervalProvider>();
+        // Use Middlewares
+        AddMiddlewares(app);
 
-    builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
-}
+        app.Run();
 
-static void AddMiddlewares(WebApplication app)
-{
-    app.UseMiddleware<ErrorHandlingMiddleware>();
-}
+        static void AddServices(WebApplicationBuilder builder)
+        {
+            builder.Services.Configure<PaycheckSettings>(builder.Configuration.GetSection(nameof(PaycheckSettings)));
 
-static void AddTestDataToDb(WebApplication app)
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IDependentRepository, DependentRepository>();
 
-        var context = services.GetRequiredService<AppDbContext>();
-        context.Database.EnsureCreated();
-        DbInitializer.Initialize(context);
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddScoped<IDependentService, DependentService>();
+            builder.Services.AddScoped<IPaycheckCalculator, PaycheckCalculator>();
+            builder.Services.AddScoped<IYearIntervalProvider, YearIntervalProvider>();
+
+            builder.Services.AddAutoMapper(typeof(EmployeeProfile), typeof(DependentProfile));
+        }
+
+        static void AddMiddlewares(WebApplication app)
+        {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
+        }
+
+        static void AddTestDataToDb(WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                var context = services.GetRequiredService<AppDbContext>();
+                context.Database.EnsureCreated();
+                DbInitializer.Initialize(context);
+            }
+        }
     }
 }
